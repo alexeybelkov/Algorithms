@@ -1,0 +1,315 @@
+11
+5
+10 3 R 
+10 4 R
+7 1 R
+2 1 L
+4 5 R
+3 6 L
+3 7 L
+3 8 L
+3 9 L
+3 10 L
+
+
+#include <iostream>
+#include <fstream>
+#include <vector>
+
+using namespace std;
+
+class In_vertex {
+	
+	public:
+	
+	int m;
+	int p;
+	char c;
+	
+	In_vertex(int m, int p, int c) : m(m), p(p), c(c) {}
+	
+};
+
+
+/*
+
+namespace std {
+	ostream& operator << (ostream& os, In_vertex& In_v) {
+		os << In_v.m << ' ' << In_v.p << ' ' << In_v.c;
+		return os;
+	}
+};
+*/
+
+class Node {
+
+	public:
+	
+	int key;
+	Node* left;
+	Node* right;
+	Node** parent;
+	
+	Node(int k = 0, Node* l = nullptr, Node* r = nullptr,Node** p = nullptr) : key(k) , left(l), right(r), parent(p) {}
+	
+	bool is_leaf() {
+		return left == nullptr && right == nullptr;
+	}
+	
+};
+
+/*
+class BinTree {
+	
+	private:
+	
+	int size = 0;
+	Node* pTree;
+	
+	public:
+	
+	int Size() {
+		return this -> size;
+	}
+	Node* root = nullptr;
+	
+	BinTree() {
+		this -> pTree = nullptr;
+	}
+	
+	bool is_empty() {
+		return pTree == nullptr;
+	}
+	
+	bool push(int key) {
+		root = pTree;
+		Node** pp = &pTree;
+		Node* p = pTree;
+
+		while (p) {
+			
+			if (key < p -> key) {
+				pp = &(p->left);
+				p = p -> left;
+			}
+			
+			else if (key > p -> key) {
+				pp = &(p -> right);
+				p = p -> right;
+			}
+			
+			else {
+				return false;
+			}
+			
+		}
+		
+		if (size == 0)
+			*pp = new Node(key);
+		
+		else {
+			Node** parent = pp;
+			*pp = new Node(key,nullptr,nullptr,parent);
+		}
+		
+		size++;
+		return true;
+		
+	}
+	
+	void preorder(Node* node,vector<int>& V) {
+		
+		if (node == nullptr) 
+			return;
+			
+		V.push_back(node -> key);
+		
+		preorder(node -> left,V);
+		preorder(node -> right,V);
+	}
+	
+};
+*/
+
+void inorder(Node* q,vector<int>& is_bst) {
+	
+	if (q == nullptr)
+		return;
+		
+	inorder(q -> left,is_bst);
+	is_bst.push_back(q -> key);
+	inorder(q -> right,is_bst);
+	
+	
+}
+
+int main() {
+	
+	vector<In_vertex> Vv;
+	
+	int i = 0;
+	int n;
+	ifstream fin("bst.in");
+
+	while (!fin.eof()) {
+		
+		if (i < 2) {
+			
+			if (i == 0) {
+				fin >> n;
+			}
+				
+			else {
+				int m;
+				fin >> m;
+				Vv.push_back(In_vertex(m,0,'H'));
+			}
+				
+		}
+		
+		else {
+			
+			int m;
+			int p;
+			char c;
+		
+			fin >> m;
+			fin >> p;
+			fin >> c;
+		
+			Vv.push_back(In_vertex(m,p,c));
+		
+		}
+		
+		i++;
+		
+	}
+	
+	vector<Node> Vn;
+	for (int i = 0; i < n; i++)
+		Vn.push_back(Node(Vv[i].m));
+		
+	fin.close();
+	ofstream fout("bst.out");
+		
+	
+	for (int i = 1; i < n; i++) {
+		if (Vv[i].c == 'L') {
+			if (Vn[Vv[i].p - 1].left == nullptr and Vn[Vv[i].p - 1].key > Vn[i].key) {
+				Vn[Vv[i].p - 1].left = &Vn[i];
+			}
+			else {
+				fout << "NO";
+				return 0;
+			}
+		}
+		else {
+			if (Vn[Vv[i].p - 1].right == nullptr)
+				Vn[Vv[i].p - 1].right = &Vn[i];
+			else {
+				fout << "NO";
+				return 0;
+			}
+		}
+	}
+	
+	vector<int> v;
+	
+	inorder(&Vn[0],v);
+	
+	for (int i = 0; i < v.size() - 1; i++) {
+		if (v[i] > v[i + 1]) {
+			fout << "NO";
+			return 0;
+		}
+	}
+
+	
+	fout << "YES";
+	
+	fout.close();
+	
+	
+	
+	return 0;
+}
+
+
+bool isBST(Node* q, int min = -2147483648, int max = 2147483647) {
+	
+	if (q == nullptr)
+		return false;
+		
+	Node* prev = nullptr;
+	stack<T> S;
+	bool b = true;
+	S.push(T(q,min,max));
+	while (!S.empty() or q != nullptr) {
+		q = S.top().q;
+		min = S.top().min;
+		max = S.top().max;
+		S.pop();
+		
+		if (q -> key < min or q -> key > max) {
+			b = false;
+			return b;
+		}
+		
+		if (q -> right != nullptr) {
+			S.push(T(q -> right,min,q -> key - 1));
+		}
+		
+		if (q -> left != nullptr) {
+			S.push(T(q -> left,q -> key, max));
+		}
+		
+	}
+	
+	return b;
+}
+
+bool isBST(Node* q) {
+	if (q == nullptr)
+		return true;
+	
+	stack<Node*> S;
+	int q_key,pre_key = -2147483648;
+	bool b = true;
+	
+	while (!S.empty() or q) {
+		if (q) {
+			S.push(q);
+			q = q -> left;
+		}
+		
+		else {
+			q = S.top();
+			q_key = q -> key;
+			if (q_key < pre_key and b == false) {
+				return false;
+			}
+			b = 0;
+			pre_key = q_key - 1;
+			S.pop();
+			q = q -> right;
+		}
+	}
+	return true;
+}
+
+bool check(Node* q, int min, int max) {
+	
+	if (q == nullptr)
+		return true;
+	
+	//cout << q -> key << endl;
+	if (q -> key < min or q -> key > max)
+		return false;
+		
+	return check(q->left, min, (long long )(q -> key) - 1) and check(q -> right, q -> key, max);
+		
+}
+
+bool isBST(Node* q) {
+	return check(q, -2147483648,2147483647);
+}
